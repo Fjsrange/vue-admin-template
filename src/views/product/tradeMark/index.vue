@@ -55,13 +55,23 @@
               >编辑</el-button
             >
 
-            <el-button
-              type="danger"
-              icon="el-icon-delete"
-              size="mini"
-              @click="handleDelete(row)"
-              >删除</el-button
-            >
+            <template>
+              <el-popconfirm
+                :title="`确定删除${row.tmName}吗？`"
+                confirmButtonText="好的"
+                cancelButtonText="不用了"
+                @onConfirm="handleDelete(row)"
+              >
+                <!-- <el-button slot="reference" >删除</el-button> -->
+                <el-button
+                  slot="reference"
+                  type="danger"
+                  icon="el-icon-delete"
+                  size="mini"
+                  >删除</el-button
+                >
+              </el-popconfirm>
+            </template>
           </template>
         </el-table-column>
       </el-table>
@@ -97,11 +107,19 @@
       :visible.sync：控制对话框显示与隐藏
     -->
     <el-dialog :title="title" :visible.sync="dialogFormVisible">
-      <el-form :model="form" style="width: 80%">
-        <el-form-item label="品牌名称" :label-width="formLabelWidth">
+      <el-form :model="form" :rules="rules" ref="form" style="width: 80%">
+        <el-form-item
+          label="品牌名称"
+          prop="tmName"
+          :label-width="formLabelWidth"
+        >
           <el-input v-model="form.tmName" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item label="品牌LOGO" :label-width="formLabelWidth">
+        <el-form-item
+          label="品牌LOGO"
+          prop="logoUrl"
+          :label-width="formLabelWidth"
+        >
           <!-- 
             action: 图片上传的地址
             on-success: 图片上传成功后的回调,
@@ -158,6 +176,18 @@ export default {
       }, // 收集品牌信息数据
       formLabelWidth: "120px", // 表单域的宽度
       title: "", // 对话框的标题
+      rules: {
+        tmName: [
+          { required: true, message: "请输入品牌名称", trigger: "blur" },
+          {
+            min: 2,
+            max: 10,
+            message: "品牌名称长度是2-10个文字",
+            trigger: "change",
+          },
+        ],
+        logoUrl: [{ required: true, message: "请选择图片", trigger: "change" }],
+      },
     };
   },
   // 组件挂载完毕发请求
@@ -182,6 +212,7 @@ export default {
     },
     // 当前页变化时触发
     handleCurrentChange(val) {
+      this.loading = true; // 显示loading
       this.page = val; // 修改当前页
       this.getPageList(); // 重新获取列表数据
     },
@@ -191,7 +222,7 @@ export default {
       if (this.title == "添加品牌") {
         this.form = { tmName: "", logoUrl: "" }; // 清除数据
       } else {
-        this.form = { ...row }; // 浅拷贝
+        this.form = { ...row }; // 浅拷贝, 修改数据不会影响原数据
       }
       this.dialogFormVisible = true; // 显示对话框
     },
@@ -201,8 +232,15 @@ export default {
     //   this.dialogFormVisible = true; // 显示对话框
     // },
     // 删除
-    handleDelete(row) {
+    async handleDelete(row) {
       console.log("删除", row);
+      let res = await this.$API.tradeMark.removeProduct(row.id);
+      this.loading = true; // 显示loading
+      console.log("删除res", res);
+      if (res.code == 200) {
+        this.$message({ type: "success", message: "删除成功" });
+        this.getPageList();
+      }
     },
     // 上传成功回调
     handleAvatarSuccess(res, file) {
@@ -231,15 +269,22 @@ export default {
     },
     // 提交表单
     async handleSubmit() {
-      let res = await this.$API.tradeMark.addOrUpdateTradeMark(this.form);
-      if (res.code == 200) {
-        this.$message({
-          message: this.form.id ? "修改品牌成功" : "添加品牌成功",
-          type: "success",
-        });
-        this.dialogFormVisible = false;
-        this.getPageList();
-      }
+      this.$refs.form.validate(async (valid) => {
+        if (valid) {
+          this.loading = true; // 显示loading
+          let res = await this.$API.tradeMark.addOrUpdateTradeMark(this.form);
+          if (res.code == 200) {
+            this.$message({
+              message: this.form.id ? "修改品牌成功" : "添加品牌成功",
+              type: "success",
+            });
+            this.dialogFormVisible = false;
+            this.getPageList();
+          }
+        } else {
+          return false;
+        }
+      });
     },
   },
 };
@@ -276,5 +321,10 @@ export default {
   width: 178px;
   height: 178px;
   display: block;
+}
+.el-button--mini,
+.el-button--mini.is-round {
+  padding: 7px 15px;
+  margin: 0 10px;
 }
 </style>
