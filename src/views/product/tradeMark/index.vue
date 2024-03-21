@@ -1,9 +1,7 @@
 <template>
   <div>
     <!-- 添加 -->
-    <el-button type="primary" icon="el-icon-plus" @click="showDialog"
-      >添加</el-button
-    >
+    <el-button type="primary" icon="el-icon-plus" @click="showDialog">添加</el-button>
 
     <!-- 表格信息
       data: 表格组件将来需要展示的数据
@@ -14,62 +12,31 @@
       label: 表示当前列的标题
     -->
     <template>
-      <el-table
-        :data="list"
-        v-loading="loading"
-        element-loading-text="拼命加载中"
-        element-loading-spinner="el-icon-loading"
-        border
-        style="width: 100%; margin-top: 20px"
-        highlight-current-row
-      >
+      <el-table :data="list" v-loading="loading" element-loading-text="拼命加载中" element-loading-spinner="el-icon-loading"
+        border style="width: 100%; margin-top: 20px" highlight-current-row>
         <el-table-column type="index" label="序号" width="50" align="center">
         </el-table-column>
 
-        <el-table-column
-          prop="tmName"
-          label="品牌名称"
-          width="width"
-          align="center"
-        >
+        <el-table-column prop="tmName" label="品牌名称" width="width" align="center">
         </el-table-column>
 
-        <el-table-column
-          prop="logoUrl"
-          label="品牌LOGO"
-          width="width"
-          align="center"
-        >
+        <el-table-column prop="logoUrl" label="品牌LOGO" width="width" align="center">
           <template slot-scope="{ row, $index }">
-            <img :src="row.logoUrl" alt="" style="width: 100px; height: 65px" />
+            <!-- <img :src="row.logoUrl" alt="" style="width: 100px; height: 65px" /> -->
+            <el-image style="width: 100px; height: 65px" :src="row.logoUrl" :preview-src-list="srcList">
+            </el-image>
           </template>
         </el-table-column>
 
         <el-table-column prop="prop" label="操作" width="width" align="center">
           <template slot-scope="{ row, $index }">
-            <el-button
-              type="warning"
-              icon="el-icon-edit"
-              size="mini"
-              @click="showDialog(row)"
-              >编辑</el-button
-            >
+            <el-button type="warning" icon="el-icon-edit" size="mini" @click="showDialog(row)">编辑</el-button>
 
             <template>
-              <el-popconfirm
-                :title="`确定删除${row.tmName}吗？`"
-                confirmButtonText="好的"
-                cancelButtonText="不用了"
-                @onConfirm="handleDelete(row)"
-              >
+              <el-popconfirm :title="`确定删除${row.tmName}吗？`" confirmButtonText="确认" cancelButtonText="取消"
+                @onConfirm="handleDelete(row)">
                 <!-- <el-button slot="reference" >删除</el-button> -->
-                <el-button
-                  slot="reference"
-                  type="danger"
-                  icon="el-icon-delete"
-                  size="mini"
-                  >删除</el-button
-                >
+                <el-button slot="reference" type="danger" icon="el-icon-delete" size="mini">删除</el-button>
               </el-popconfirm>
             </template>
           </template>
@@ -89,16 +56,9 @@
         :pager-count="11" 表示分页器页码最大按钮个数
       -->
       <template>
-        <el-pagination
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-          :current-page="page"
-          :page-sizes="[3, 5, 10]"
-          :page-size="limit"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="total"
-          style="margin-top: 20px; text-align: center"
-        >
+        <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="page"
+          :page-sizes="[3, 5, 10]" :page-size="limit" layout="total, sizes, prev, pager, next, jumper" :total="total"
+          style="margin-top: 20px; text-align: center">
         </el-pagination>
       </template>
     </template>
@@ -108,42 +68,21 @@
     -->
     <el-dialog :title="title" :visible.sync="dialogFormVisible">
       <el-form :model="form" :rules="rules" ref="form" style="width: 80%">
-        <el-form-item
-          label="品牌名称"
-          prop="tmName"
-          :label-width="formLabelWidth"
-        >
+        <el-form-item label="品牌名称" prop="tmName" :label-width="formLabelWidth">
           <el-input v-model="form.tmName" autocomplete="off"></el-input>
         </el-form-item>
-        <el-form-item
-          label="品牌LOGO"
-          prop="logoUrl"
-          :label-width="formLabelWidth"
-        >
+        <el-form-item label="品牌LOGO" prop="logoUrl" :label-width="formLabelWidth">
           <!-- 
             action: 图片上传的地址
             on-success: 图片上传成功后的回调,
             before-upload: 图片上传前的回调
             :show-file-list="false": 是否显示上传的文件列表
            -->
-          <el-upload
-            class="avatar-uploader"
-            action="/dev-api/admin/product/fileUpload"
-            :show-file-list="false"
-            :on-success="handleAvatarSuccess"
-            :before-upload="beforeAvatarUpload"
-            :on-preview="handlePictureCardPreview"
-            :on-remove="handleRemove"
-          >
-            <img
-              v-if="form.logoUrl"
-              :src="form.logoUrl"
-              class="avatar custom-upload"
-            />
-            <i
-              v-else
-              class="el-icon-plus avatar-uploader-icon custom-upload-ago"
-            ></i>
+          <el-upload class="avatar-uploader" action="/dev-api/admin/product/fileUpload" :show-file-list="false"
+            :on-success="handleAvatarSuccess" :before-upload="beforeAvatarUpload" :on-preview="handlePictureCardPreview"
+            :on-remove="handleRemove">
+            <img v-if="form.logoUrl" :src="form.logoUrl" class="avatar custom-upload" />
+            <i v-else class="el-icon-plus avatar-uploader-icon custom-upload-ago"></i>
             <div slot="tip" class="el-upload__tip">
               只能上传jpg/png文件，且不超过500kb
             </div>
@@ -168,6 +107,7 @@ export default {
       total: 0, // 总共多少条数据
       // pageSize: 5, // 每页展示多少条数据
       list: [], // 存储列表数据
+      srcList: [], // 存储图片的数组
       loading: true, // 加载中
       dialogFormVisible: false, // 控制对话框的显示与隐藏
       form: {
@@ -202,6 +142,9 @@ export default {
       if (res.code == 200) {
         this.total = res.data.total;
         this.list = res.data.records;
+        this.list.forEach((item) => {
+          this.srcList.push(item.logoUrl);
+        })
         this.loading = false; // 数据请求完毕，关闭loading
       }
     },
@@ -298,9 +241,11 @@ export default {
   position: relative;
   overflow: hidden;
 }
+
 .avatar-uploader .el-upload:hover {
   border-color: #409eff;
 }
+
 .avatar-uploader-icon {
   font-size: 28px;
   color: #8c939d;
@@ -309,19 +254,27 @@ export default {
   line-height: 178px;
   text-align: center;
 }
+
 .custom-upload-ago {
-  border: 1px dashed #ccc; /* 自定义边框样式 */
-  border-radius: 5px; /* 自定义边框圆角 */
+  border: 1px dashed #ccc;
+  /* 自定义边框样式 */
+  border-radius: 5px;
+  /* 自定义边框圆角 */
 }
+
 .custom-upload {
-  border: 1px solid #ccc; /* 自定义边框样式 */
-  border-radius: 5px; /* 自定义边框圆角 */
+  border: 1px solid #ccc;
+  /* 自定义边框样式 */
+  border-radius: 5px;
+  /* 自定义边框圆角 */
 }
+
 .avatar {
   width: 178px;
   height: 178px;
   display: block;
 }
+
 .el-button--mini,
 .el-button--mini.is-round {
   padding: 7px 15px;
