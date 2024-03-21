@@ -37,9 +37,14 @@ Vue.config.productionTip = false;
 
 // 引入相关api请求接口
 import API from "@/api";
+import CategorySelect from "@/components/CategorySelect";
+
 // 组件实例的原型指向的是Vue.prototype
 // 好处是可以在任意的组件页面使用相关的api
 Vue.prototype.$API = API;
+// 注册全局组件
+// Vue.component('CategorySelect',CategorySelect)均可
+Vue.component(CategorySelect.name, CategorySelect);
 
 new Vue({
   el: "#app",
