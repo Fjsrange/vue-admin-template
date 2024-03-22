@@ -5,8 +5,7 @@
     </el-card>
     <el-card>
       <div v-show="isShowTable">
-        <el-button type="primary" :disabled="!category3Id" icon="el-icon-plus"
-          @click="isShowTable = false">添加属性</el-button>
+        <el-button type="primary" :disabled="!category3Id" icon="el-icon-plus" @click="addAttr">添加属性</el-button>
 
         <el-table style="width: 100%;" border prop="prop" :data="list">
           <el-table-column type="index" label="序号" width="80" align="center">
@@ -39,19 +38,23 @@
           </el-form-item>
         </el-form>
 
-        <el-button type="primary" :disabled="!attrInfo.attrName" icon="el-icon-plus"
-          @click="isShowTable = false">添值加属性</el-button>
+        <el-button type="primary" :disabled="!attrInfo.attrName.trim()" icon="el-icon-plus"
+          @click="addAttrValue">添值加属性</el-button>
         <el-button @click="isShowTable = true">取消</el-button>
 
-        <el-table :data="attrValueList" border style="width: 100%" align="center">
+        <el-table :data="attrInfo.attrValueList" border style="width: 100%; margin: 20px 0;" align="center">
           <el-table-column type="index" label="序号" width="80">
           </el-table-column>
           <el-table-column prop="prop" label="属性值名称" width="width">
             <template slot-scope="{row, $index}">
-              <el-input v-model="valueName" size="mini" placeholder="输入关键字搜索" />
+              <el-input v-model="row.valueName" size="mini" placeholder="请输入属性值名称" />
+              <span>{{ row.valueName }}</span>
             </template>
           </el-table-column>
           <el-table-column prop="prop" label="操作" width="width">
+            <template slot-scope="{row, $index}">
+              <el-button type="danger" icon="el-icon-delete" size="mini" @click="remove(row, $index)"></el-button>
+            </template>
           </el-table-column>
         </el-table>
 
@@ -64,6 +67,9 @@
 </template>
 
 <script>
+// 按需引入 loadsh 当中的深拷贝
+import cloneDeep from 'lodash/cloneDeep'
+
 export default {
   name: "attr",
   data() {
@@ -76,8 +82,7 @@ export default {
       attrInfo: {
         attrName: '', // 属性名称
         attrValueList: [], // 属性值
-        valueName: '',
-        categoryId: 0, // 三级分类id
+        categoryId: 0, // 第三级分类id
         categoryLevel: 3, // 分类等级
       }
     };
@@ -108,10 +113,48 @@ export default {
         this.list = res.data;
       }
     },
+    /**
+     * 表单模块
+     */
+    // 编辑
+    handlerEdit(row) {
+      console.log('编辑 row', row);
+      this.isShowTable = false;
+      // 将选中的属性赋值给attrInfo
+      // 深拷贝和浅拷贝在面试的时候出现的频率较高，需达到可手写深拷贝和浅拷贝
+      this.attrInfo = cloneDeep(row)
+    },
     // 删除
     handlerRemove(row) {
-      console.log('row', row);
+      console.log('删除 row', row);
+      this.isShowTable = false;
 
+    },
+    // 打开表单
+    addAttr() {
+      this.isShowTable = false;
+      // 清除数据
+      // 收集三级分类的id
+      this.attrInfo = {
+        attrName: '', // 属性名称
+        attrValueList: [], // 属性值
+        categoryId: this.category3Id, // 第三级分类id
+        categoryLevel: 3, // 分类等级
+      }
+    },
+    // 添加属性值
+    async addAttrValue() {
+      // 向属性值的数组中添加元素
+      this.attrInfo.attrValueList.push({
+        attrId: this.attrInfo.id,
+        valueName: '',
+      })
+    },
+    // 删除
+    remove(row, index) {
+      console.log('表单内删除 row', row, 'index', index);
+      this.attrInfo.attrValueList.splice(index, 1)
+      this.getAttrList();
     },
   }
 };
