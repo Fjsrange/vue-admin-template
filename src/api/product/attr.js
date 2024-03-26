@@ -35,3 +35,10 @@ export const saveAttrInfo = (data) =>
     data,
     method: "post",
   });
+
+// 删除属性
+export const deleteAttr = (attrId) =>
+  request({
+    url: `/admin/product/deleteAttr/${attrId}`,
+    method: "delete",
+  });
