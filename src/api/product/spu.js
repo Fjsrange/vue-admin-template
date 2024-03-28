@@ -10,13 +10,43 @@ export const getSpuList = (page, limit, category3Id) =>
     },
   });
 
+// 获取spu信息
+export const getSpuById = (spuId) =>
+  request({
+    url: `/admin/product/getSpuById/${spuId}`,
+    method: "get",
+  });
+
+// 获取品牌信息
+export const getTradeMarkList = () =>
+  request({
+    url: `/admin/product/baseTrademark/getTrademarkList`,
+    method: "get",
+  });
+
+// 获取spu图片
+export const getSpuImageList = (spuId) =>
+  request({
+    url: `/admin/product/spuImageList/${spuId}`,
+    method: "get",
+  });
+
+// 获取平台全部销售属性
+export const getBaseSaleAttrList = () =>
+  request({
+    url: "/admin/product/baseSaleAttrList",
+    method: "get",
+  });
+
 // 添加SPU
-export const addSpu = (data) =>
+export const addSpuInfo = (data) =>
   request({
     url: "/admin/product/saveSpuInfo",
     data,
     method: "post",
   });
+
+// -----------------------
 
 // 删除spu
 export const deleteSpu = (spuId) =>

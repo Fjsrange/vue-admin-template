@@ -108,8 +108,8 @@ export default {
         this.scene = 1;
       } else {
         // 修改
-        console.log('修改');
         this.scene = 1;
+        // 在父组件中可以通过$refs来访问子组件的属性和方法
         this.$refs.spuForm.initSpuData(row)
       }
 
@@ -128,6 +128,7 @@ export default {
     // 调整 handleSizeChange 和 handleCurrentChange 方法，直接调用 updateList 方法更新当前页的数据
     // 每页条数变化时触发
     handleSizeChange(val) {
+      this.loading = true; // 显示loading
       this.limit = val; // 修改每页展示多少条数据
       this.getSpuList(); // 重新获取列表数据
     },

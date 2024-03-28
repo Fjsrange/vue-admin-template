@@ -1,46 +1,59 @@
 <template>
   <div class="">
-    <el-form ref="form" :model="form" label-width="80px">
+    <el-form ref="form" :model="spu" label-width="80px">
       <el-form-item label="SPU名称">
-        <el-input v-model="spuName"></el-input>
+        <el-input v-model="spu.spuName"></el-input>
       </el-form-item>
       <el-form-item label="品牌">
-        <el-select v-model="region" placeholder="请选择品牌">
-          <el-option label="区域一" value="shanghai"></el-option>
-          <el-option label="区域二" value="beijing"></el-option>
+        <el-select v-model="spu.tmId" placeholder="请选择品牌">
+          <el-option :label="tm.tmName" :value="tm.id" v-for="(tm, index) in tradeMarkList" :key="tm.id"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="SPU描述">
-        <el-input type="textarea" v-model="description" rows="4" placeholder="SPU描述"></el-input>
+        <el-input type="textarea" v-model="spu.description" rows="4" placeholder="SPU描述"></el-input>
       </el-form-item>
 
       <el-form-item label="SPU图片">
-        <el-upload action="https://jsonplaceholder.typicode.com/posts/" list-type="picture-card"
-          :on-preview="handlePictureCardPreview" :on-remove="handleRemove">
+        <el-upload action="/dev-api/admin/product/fileUpload" list-type="picture-card"
+          :on-preview="handlePictureCardPreview" :on-remove="handleRemove" :on-success="handleSuccess"
+          :file-list="spuImageList">
           <i class="el-icon-plus"></i>
         </el-upload>
         <el-dialog :visible.sync="dialogVisible">
-          <img width="100%" :src="spuImageList" alt="">
+          <img width="100%" :src="dialogImageUrl" alt="">
         </el-dialog>
       </el-form-item>
 
       <el-form-item label="销售属性">
-        <el-select v-model="region" placeholder="请选择销售属性">
-          <el-option label="区域一" value="shanghai"></el-option>
-          <el-option label="区域二" value="beijing"></el-option>
+        <el-select v-model="attrIdAndAttrName" :placeholder="`还有${unSelectSaleAttr.length}个未选择`">
+          <el-option :label="base.name" :value="`${base.id}:${base.name}`" v-for="base in unSelectSaleAttr"
+            :key="base.id"></el-option>
+          <!-- <el-option label="区域二" value="beijing"></el-option> -->
         </el-select>
-        <el-button type="primary" icon="el-icon-plus">添加销售属性</el-button>
-        <el-table :data="spuSaleAttrList" border style="width: 100%">
+        <el-button type="primary" icon="el-icon-plus" :disabled="!attrIdAndAttrName"
+          @click="addSaleAttr">添加销售属性</el-button>
+        <!-- 展示的是当前spu属于自己的销售属性 -->
+        <el-table :data="spu.spuSaleAttrList" border style="width: 100%">
           <el-table-column type="index" label="序号" width="60">
           </el-table-column>
-          <el-table-column prop="date" label="属性名" width="180">
+
+          <el-table-column prop="saleAttrName" label="属性名" width="180">
           </el-table-column>
-          <el-table-column prop="name" label="属性值名称列表">
+
+          <el-table-column prop="spuSaleAttrValueList" label="属性值名称列表">
             <template slot-scope="{row, $index}">
-              <el-button type="primary" size="mini" plain>黑色<i class="el-icon-close  el-icon--right"></i></el-button>
-              <el-button size="mini" plain>添加</el-button>
+              <el-tag :key="tag.id" v-for="tag in row.spuSaleAttrValueList" closable :disable-transitions="false"
+                @close="handleClose($inedx)">
+                {{ tag.saleAttrValueName }}
+              </el-tag>
+
+              <el-input class="input-new-tag" v-if="inputVisible" v-model="inputValue" ref="saveTagInput" size="small"
+                @keyup.enter.native="handleInputConfirm" @blur="handleInputConfirm">
+              </el-input>
+              <el-button v-else class="button-new-tag" size="small" @click="showInput">添加</el-button>
             </template>
           </el-table-column>
+
           <el-table-column prop="address" label="操作" width="180">
             <template slot-scope="{row, $index}">
               <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
@@ -63,28 +76,136 @@ export default {
   components: {},
   data() {
     return {
-      spuName: '',
-      region: '',
-      description: '',
-      spuImageList: '',
+      dialogImageUrl: '',
       dialogVisible: false,
-      spuSaleAttrList: [],
+      spu: {
+        category3Id: 0, // 三级分类id
+        spuName: '', // spu名称
+        tmId: '',
+        description: '',
+        spuImageList: [],
+        spuSaleAttrList: [],
+      }, // 存储spu信息属性
+      tradeMarkList: [], // 存储品牌信息
+      spuImageList: [], // 存储spu图片信息
+      spuSaleAttrValueList: [], // 存储销售属性
+      dynamicTags: [], // 存储动态标签
+      inputVisible: false, // 控制文本框的显示与隐藏
+      inputValue: '', // 文本框的值
+      attrIdAndAttrName: '', // 收集未选择的销售属性id和属性名
+    }
+  },
+  computed: {
+    // 销售属性还有没有未选择的
+    unSelectSaleAttr() {
+      // return this.spuSaleAttrValueList.length - this.spu.spuSaleAttrList.length || 0;
+      // 从已有的数据中过滤出还未选择的销售属性
+      // 数组过滤的方法,可以从已有的数组当中过滤出用户需要的元素,并返回一个新的数据
+      let res = this.spuSaleAttrValueList.filter((item) => {
+        // every 是数组的方法,会返回一个布尔值
+        return this.spu.spuSaleAttrList.every((item1) => {
+          return item.name != item1.saleAttrName;
+        })
+      })
+      return res;
     }
   },
   methods: {
     // 初始化spu表单数据
-    initSpuData(row) {
-      console.log('spurow', row);
-
+    async initSpuData(row) {
+      // 获取spu信息
+      let res = await this.$API.spu.getSpuById(row.id)
+      if (res.code == 200) {
+        this.spu = res.data;
+      }
+      // 获取品牌信息
+      let tradeMark = await this.$API.spu.getTradeMarkList();
+      if (tradeMark.code == 200) {
+        this.tradeMarkList = tradeMark.data;
+      }
+      // 获取spu图片的数据
+      let spuImageList = await this.$API.spu.getSpuImageList(row.id);
+      if (spuImageList.code == 200) {
+        let imgArr = spuImageList.data;
+        console.log('imgArr', imgArr);
+        // 由于照片墙显示图片的数据需要数组，数组里面的元素需要有name与url字段
+        // 需要把服务器返回的数据进行修改
+        imgArr.forEach((item) => {
+          item.name = item.imgName;
+          item.url = item.imgUrl;
+        })
+        // 把整理好的数据进行赋值
+        this.spuImageList = imgArr;
+      }
+      // 获取平台全部销售属性
+      let spuSaleAttrValueList = await this.$API.spu.getBaseSaleAttrList();
+      if (spuSaleAttrValueList.code == 200) {
+        this.spuSaleAttrValueList = spuSaleAttrValueList.data;
+      }
     },
     /* 表单区域 */
     // 上传图片
     handleRemove(file, fileList) {
+      // file参数:代表的是删除的那个图片
+      // fileList参数:代表的是剩余的图片
       console.log(file, fileList);
+      // 收集照片墙图片的数据
+      // 对于已有的图片【照片墙中现实的图片：有name、url字段的】，因为照片墙显示数据必须要有这两个属性
+      // 对于服务器而言不需要name、url字段，将来对于已有的图片数据再提交给服务器的时候，需要进行处理。
+      this.spuImageList = fileList;
     },
+    // 照片墙图片预览的回调
     handlePictureCardPreview(file) {
-      this.spuImageList = file.url;
+      console.log('flir', file);
+      this.dialogImageUrl = file.url;
       this.dialogVisible = true;
+    },
+    // 照片墙上传成功回调
+    handleSuccess(response, file, fileList) {
+      if (response.code == 200) {
+        this.$message.success('上传成功')
+      }
+    },
+    /* 销售属性 */
+    // 添加销售属性
+    addSaleAttr() {
+      // 已经收集到的数据
+      // 把收集到的销售属性进行分割
+      // const 
+      const [baseSaleAttrId, saleAttrName] = this.attrIdAndAttrName.split(':')
+      // 向spu对象中添加新的销售属性
+      let newSaleAttr = { baseSaleAttrId, saleAttrName, spuSaleAttrValueList: [] }
+      this.spu.spuSaleAttrList.push(newSaleAttr)
+
+
+      /* // 把收集到的销售属性收集到动态标签中
+      const [baseSaleAttrId, saleAttrName] = this.attrIdAndAttrName.split(':');
+      // 向动态标签中添加新的销售属性
+      let newSaleAttr = {baseSaleAttrId, saleAttrName};
+      this.dynamicTags.push(newSaleAttr);
+      // 清空收集的数据
+      this.attrIdAndAttrName = ''; */
+    },
+    //  销售属性中的tag标签
+
+    handleClose(tag) {
+      this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);
+    },
+
+    showInput() {
+      this.inputVisible = true;
+      this.$nextTick(_ => {
+        this.$refs.saveTagInput.$refs.input.focus();
+      });
+    },
+
+    handleInputConfirm() {
+      let inputValue = this.inputValue;
+      if (inputValue) {
+        this.dynamicTags.push(inputValue);
+      }
+      this.inputVisible = false;
+      this.inputValue = '';
     },
     // 提交表单
     onSubmit() {
@@ -94,4 +215,23 @@ export default {
 }
 </script>
 
+<style>
+.el-tag+.el-tag {
+  margin-left: 10px;
+}
+
+.button-new-tag {
+  margin-left: 10px;
+  height: 32px;
+  line-height: 30px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.input-new-tag {
+  width: 90px;
+  margin-left: 10px;
+  vertical-align: bottom;
+}
+</style>
 <style scoped></style>
