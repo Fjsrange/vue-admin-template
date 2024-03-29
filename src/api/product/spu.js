@@ -38,13 +38,24 @@ export const getBaseSaleAttrList = () =>
     method: "get",
   });
 
-// 添加SPU
-export const addSpuInfo = (data) =>
-  request({
-    url: "/admin/product/saveSpuInfo",
-    data,
-    method: "post",
-  });
+// 添加 或 修改 SPU
+export const addAndUpdateSpu = (data) => {
+  if (!data.id) {
+    // 添加
+    return request({
+      url: "/admin/product/saveSpuInfo",
+      data,
+      method: "post",
+    });
+  } else {
+    // 修改
+    return request({
+      url: "/admin/product/updateSpuInfo",
+      data,
+      method: "post",
+    });
+  }
+};
 
 // -----------------------
 
@@ -53,12 +64,4 @@ export const deleteSpu = (spuId) =>
   request({
     url: `/admin/product/deleteSpu/${spuId}`,
     method: "delete",
-  });
-
-// 修改SPU
-export const updateSpu = (data) =>
-  request({
-    url: "/admin/product/updateSpuInfo",
-    data,
-    method: "post",
   });

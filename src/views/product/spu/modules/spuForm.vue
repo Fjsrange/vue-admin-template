@@ -1,6 +1,7 @@
 <template>
   <div class="">
-    <el-form ref="form" :model="spu" label-width="80px">
+    <el-form ref="form" :model="spu" label-width="80px" v-loading="loading" element-loading-text="拼命加载中"
+      element-loading-spinner="el-icon-loading">
       <el-form-item label="SPU名称">
         <el-input v-model="spu.spuName"></el-input>
       </el-form-item>
@@ -42,29 +43,31 @@
 
           <el-table-column prop="spuSaleAttrValueList" label="属性值名称列表">
             <template slot-scope="{row, $index}">
-              <el-tag :key="tag.id" v-for="tag in row.spuSaleAttrValueList" closable :disable-transitions="false"
-                @close="handleClose($inedx)">
+              <el-tag :key="tag.id" v-for="(tag, index) in row.spuSaleAttrValueList" closable :disable-transitions="false"
+                @close="row.spuSaleAttrValueList.splice(index, 1)">
                 {{ tag.saleAttrValueName }}
               </el-tag>
 
-              <el-input class="input-new-tag" v-if="inputVisible" v-model="inputValue" ref="saveTagInput" size="small"
-                @keyup.enter.native="handleInputConfirm" @blur="handleInputConfirm">
+              <el-input class="input-new-tag" v-if="row.inputVisible" v-model="row.inputValue" ref="saveTagInput"
+                size="small" @blur="handleInputConfirm(row)">
               </el-input>
-              <el-button v-else class="button-new-tag" size="small" @click="showInput">添加</el-button>
+              <el-button v-else class="button-new-tag" size="small"
+                @click="addSaleAttrValue($event, $index, row)">添加</el-button>
             </template>
           </el-table-column>
 
           <el-table-column prop="address" label="操作" width="180">
             <template slot-scope="{row, $index}">
-              <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
+              <el-button type="danger" icon="el-icon-delete" size="mini"
+                @click="spu.spuSaleAttrList.splice($index, 1)"></el-button>
             </template>
           </el-table-column>
         </el-table>
       </el-form-item>
 
       <el-form-item>
-        <el-button type="primary" @click="onSubmit">立即创建</el-button>
-        <el-button @click="$emit('changeScene', 0)">取消</el-button>
+        <el-button type="primary" @click="onSubmit">保存</el-button>
+        <el-button @click="cancel">取消</el-button>
       </el-form-item>
     </el-form>
   </div>
@@ -76,6 +79,7 @@ export default {
   components: {},
   data() {
     return {
+      loading: false, // 表单的加载中效果
       dialogImageUrl: '',
       dialogVisible: false,
       spu: {
@@ -89,9 +93,6 @@ export default {
       tradeMarkList: [], // 存储品牌信息
       spuImageList: [], // 存储spu图片信息
       spuSaleAttrValueList: [], // 存储销售属性
-      dynamicTags: [], // 存储动态标签
-      inputVisible: false, // 控制文本框的显示与隐藏
-      inputValue: '', // 文本框的值
       attrIdAndAttrName: '', // 收集未选择的销售属性id和属性名
     }
   },
@@ -113,35 +114,41 @@ export default {
   methods: {
     // 初始化spu表单数据
     async initSpuData(row) {
-      // 获取spu信息
-      let res = await this.$API.spu.getSpuById(row.id)
-      if (res.code == 200) {
-        this.spu = res.data;
+      // 修改spu的时候,需要收集数据
+      if (row) {
+        this.loading = true;
+        // 获取spu信息
+        let res = await this.$API.spu.getSpuById(row.id)
+        if (res.code == 200) {
+          this.spu = res.data;
+        }
+
+        // 获取spu图片的数据
+        let spuImageList = await this.$API.spu.getSpuImageList(row.id);
+        if (spuImageList.code == 200) {
+          let imgArr = spuImageList.data;
+          console.log('imgArr', imgArr);
+          // 由于照片墙显示图片的数据需要数组，数组里面的元素需要有name与url字段
+          // 需要把服务器返回的数据进行修改
+          imgArr.forEach((item) => {
+            item.name = item.imgName;
+            item.url = item.imgUrl;
+          })
+          // 把整理好的数据进行赋值
+          this.spuImageList = imgArr;
+        }
       }
       // 获取品牌信息
       let tradeMark = await this.$API.spu.getTradeMarkList();
       if (tradeMark.code == 200) {
         this.tradeMarkList = tradeMark.data;
       }
-      // 获取spu图片的数据
-      let spuImageList = await this.$API.spu.getSpuImageList(row.id);
-      if (spuImageList.code == 200) {
-        let imgArr = spuImageList.data;
-        console.log('imgArr', imgArr);
-        // 由于照片墙显示图片的数据需要数组，数组里面的元素需要有name与url字段
-        // 需要把服务器返回的数据进行修改
-        imgArr.forEach((item) => {
-          item.name = item.imgName;
-          item.url = item.imgUrl;
-        })
-        // 把整理好的数据进行赋值
-        this.spuImageList = imgArr;
-      }
       // 获取平台全部销售属性
       let spuSaleAttrValueList = await this.$API.spu.getBaseSaleAttrList();
       if (spuSaleAttrValueList.code == 200) {
         this.spuSaleAttrValueList = spuSaleAttrValueList.data;
       }
+      this.loading = false;
     },
     /* 表单区域 */
     // 上传图片
@@ -156,7 +163,6 @@ export default {
     },
     // 照片墙图片预览的回调
     handlePictureCardPreview(file) {
-      console.log('flir', file);
       this.dialogImageUrl = file.url;
       this.dialogVisible = true;
     },
@@ -174,42 +180,64 @@ export default {
       // const 
       const [baseSaleAttrId, saleAttrName] = this.attrIdAndAttrName.split(':')
       // 向spu对象中添加新的销售属性
-      let newSaleAttr = { baseSaleAttrId, saleAttrName, spuSaleAttrValueList: [] }
-      this.spu.spuSaleAttrList.push(newSaleAttr)
-
-
-      /* // 把收集到的销售属性收集到动态标签中
-      const [baseSaleAttrId, saleAttrName] = this.attrIdAndAttrName.split(':');
-      // 向动态标签中添加新的销售属性
-      let newSaleAttr = {baseSaleAttrId, saleAttrName};
-      this.dynamicTags.push(newSaleAttr);
-      // 清空收集的数据
-      this.attrIdAndAttrName = ''; */
+      let newSaleAttr = { baseSaleAttrId, saleAttrName, spuSaleAttrValueList: [] };
+      this.spu.spuSaleAttrList.push(newSaleAttr);
+      this.attrIdAndAttrName = '';
     },
-    //  销售属性中的tag标签
-
-    handleClose(tag) {
-      this.dynamicTags.splice(this.dynamicTags.indexOf(tag), 1);
-    },
-
-    showInput() {
-      this.inputVisible = true;
+    // 添加属性值
+    addSaleAttrValue(e, index, row) {
+      // 通过使用 $set 再ro上添加响应式数据 inputVisible、inputValue
+      this.$set(row, 'inputVisible', true)
+      this.$set(row, 'inputValue', '')
       this.$nextTick(_ => {
         this.$refs.saveTagInput.$refs.input.focus();
       });
     },
-
-    handleInputConfirm() {
-      let inputValue = this.inputValue;
-      if (inputValue) {
-        this.dynamicTags.push(inputValue);
+    handleInputConfirm(row) {
+      console.log('inputValue!', row);
+      row.inputVisible = false;
+      const { baseSaleAttrId, inputValue } = row;
+      // 新增的销售属性值的名称不能为空
+      if (inputValue.trim() == '') {
+        this.$message.warning('属性值不能为空');
+        return;
       }
-      this.inputVisible = false;
-      this.inputValue = '';
+      // 属性值不能重复  也可以使用some
+      let res = row.spuSaleAttrValueList.every(item => item.saleAttrValueName != inputValue);
+      console.log('res!', res);
+      if (!res) {
+        this.$message.warning('当前属性值名称已存在');
+        return;
+      }
+
+      // 新增销售属性值
+      let newAttrValue = { baseSaleAttrId, saleAttrValueName: inputValue }
+      row.spuSaleAttrValueList.push(newAttrValue)
     },
     // 提交表单
-    onSubmit() {
-      console.log('submit!');
+    async onSubmit() {
+      console.log('submit!', this.spu);
+      // 需要整理照片墙的数据，携带参数：需要携带imageName、imageUrl字段
+      this.spu.spuImageList = this.spuImageList.map(item => {
+        return {
+          imageName: item.name,
+          imageUrl: item.url = (item.reponse && item.reponse.data) || item.url
+        }
+      })
+      console.log('this.spu.spuImageList', this.spu.spuImageList);
+
+      let res = await this.$API.spu.addAndUpdateSpu(this.spu)
+      console.log('cs', res);
+      if (res.code == 200) {
+        this.$message.success('保存成功');
+        this.$emit('changeScene', 0);
+        this.spu = {};
+      }
+    },
+    cancel() {
+      this.$emit('changeScene', 0);
+      // 清除数据
+      this.spu = {};
     },
   },
 }

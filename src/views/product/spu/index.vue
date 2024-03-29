@@ -1,7 +1,7 @@
 <template>
   <div>
     <el-card style="margin: 20px 0;">
-      <CategorySelect @getCategoryId="getCategoryId" :show="!isShowTable"></CategorySelect>
+      <CategorySelect @getCategoryId="getCategoryId" :show="scene != 0"></CategorySelect>
     </el-card>
     <el-card>
       <div v-show="scene == 0">
@@ -106,6 +106,7 @@ export default {
         // 添加
         console.log('添加');
         this.scene = 1;
+        this.$refs.spuForm.initSpuData()
       } else {
         // 修改
         this.scene = 1;
