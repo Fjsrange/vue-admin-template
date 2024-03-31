@@ -1,14 +1,29 @@
 <template>
   <div>
-    <el-card style="margin: 20px 0;">
-      <CategorySelect @getCategoryId="getCategoryId" :show="scene != 0"></CategorySelect>
+    <el-card style="margin: 20px 0">
+      <CategorySelect
+        @getCategoryId="getCategoryId"
+        :show="scene != 0"
+      ></CategorySelect>
     </el-card>
     <el-card>
       <div v-show="scene == 0">
-        <el-button type="primary" icon="el-icon-plus" :disabled="!category3Id" @click="changeSpu">添加SPU</el-button>
+        <el-button
+          type="primary"
+          icon="el-icon-plus"
+          :disabled="!category3Id"
+          @click="changeSpu"
+          >添加SPU</el-button
+        >
 
-        <el-table :data="list" border style="width: 100%" v-loading="loading" element-loading-text="拼命加载中"
-          element-loading-spinner="el-icon-loading">
+        <el-table
+          :data="list"
+          border
+          style="width: 100%"
+          v-loading="loading"
+          element-loading-text="拼命加载中"
+          element-loading-spinner="el-icon-loading"
+        >
           <el-table-column type="index" label="序号" width="60" align="center">
           </el-table-column>
           <el-table-column prop="spuName" label="SPU名称" width="180">
@@ -16,27 +31,83 @@
           <el-table-column prop="description" label="SPU描述">
           </el-table-column>
           <el-table-column prop="prop" label="操作" width="260" align="center">
-            <template slot-scope="{row,$index}">
-              <el-tooltip class="item" effect="dark" content="添加sku" placement="top">
-                <el-button type="success" icon="el-icon-plus" size="mini"></el-button>
+            <template slot-scope="{ row, $index }">
+              <el-tooltip
+                class="item"
+                effect="dark"
+                content="添加sku"
+                placement="top"
+              >
+                <el-button
+                  type="success"
+                  icon="el-icon-plus"
+                  size="mini"
+                  @click="addSkuForm(row)"
+                ></el-button>
               </el-tooltip>
-              <el-tooltip class="item" effect="dark" content="修改spu" placement="top">
-                <el-button type="warning" icon="el-icon-edit" size="mini" @click="changeSpu(row)"></el-button>
+              <el-tooltip
+                class="item"
+                effect="dark"
+                content="修改spu"
+                placement="top"
+              >
+                <el-button
+                  type="warning"
+                  icon="el-icon-edit"
+                  size="mini"
+                  @click="changeSpu(row)"
+                ></el-button>
               </el-tooltip>
-              <el-tooltip class="item" effect="dark" content="查看当前spu详情" placement="top">
-                <el-button type="info" icon="el-icon-warning" size="mini"></el-button>
+              <el-tooltip
+                class="item"
+                effect="dark"
+                content="查看当前spu详情"
+                placement="top"
+              >
+                <el-button
+                  type="info"
+                  icon="el-icon-warning"
+                  size="mini"
+                ></el-button>
               </el-tooltip>
-              <el-tooltip class="item" effect="dark" content="删除spu" placement="top">
-                <el-button type="danger" icon="el-icon-delete" size="mini"></el-button>
+              <el-tooltip
+                class="item"
+                effect="dark"
+                content="删除spu"
+                placement="top"
+              >
+                <el-popconfirm
+                  style="margin-left: 10px"
+                  confirmButtonText="确认"
+                  cancelButtonText="取消"
+                  icon="el-icon-info"
+                  iconColor="red"
+                  title="是否删除当前spu？"
+                  @onConfirm="handleDelete(row.id)"
+                >
+                  <el-button
+                    slot="reference"
+                    type="danger"
+                    icon="el-icon-delete"
+                    size="mini"
+                  ></el-button>
+                </el-popconfirm>
               </el-tooltip>
             </template>
           </el-table-column>
         </el-table>
 
         <template>
-          <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="page"
-            :page-sizes="[3, 5, 10]" :page-size="limit" layout="prev, pager, next, jumper, -> , sizes, total"
-            :total="total" style="margin-top: 20px; text-align: center">
+          <el-pagination
+            @size-change="handleSizeChange"
+            @current-change="handleCurrentChange"
+            :current-page="page"
+            :page-sizes="[3, 5, 10]"
+            :page-size="limit"
+            layout="prev, pager, next, jumper, -> , sizes, total"
+            :total="total"
+            style="margin-top: 20px; text-align: center"
+          >
           </el-pagination>
         </template>
       </div>
@@ -56,9 +127,9 @@ export default {
   components: { CategorySelect, spuForm, skuForm },
   data() {
     return {
-      category1Id: '',
-      category2Id: '',
-      category3Id: '',
+      category1Id: "",
+      category2Id: "",
+      category3Id: "",
       isShowTable: true,
       loading: false, // 表格的加载中效果
       page: 1, // 当前页
@@ -76,11 +147,11 @@ export default {
       if (level == 1) {
         this.category1Id = categoryId;
         // 清除2、3级id
-        this.category2Id = '';
-        this.category3Id = '';
+        this.category2Id = "";
+        this.category3Id = "";
       } else if (level == 2) {
         this.category2Id = categoryId;
-        this.category3Id = '';
+        this.category3Id = "";
       } else if (level == 3) {
         this.category3Id = categoryId;
         this.loading = true;
@@ -99,21 +170,32 @@ export default {
         this.loading = false;
       }
     },
-    // 添加 | 修改
+    // 添加SPU | 修改SPU
     changeSpu(row) {
-      console.log('row', row);
       if (!row.id) {
         // 添加
-        console.log('添加');
         this.scene = 1;
-        this.$refs.spuForm.initSpuData()
+        this.$refs.spuForm.addSpuData(this.category3Id);
       } else {
         // 修改
         this.scene = 1;
         // 在父组件中可以通过$refs来访问子组件的属性和方法
-        this.$refs.spuForm.initSpuData(row)
+        this.$refs.spuForm.initSpuData(row);
       }
-
+    },
+    // 添加SKU
+    addSkuForm(row) {
+      this.scene = 2;
+      this.$refs.skuForm.getData(row);
+    },
+    // 删除
+    async handleDelete(id) {
+      this.loading = true;
+      let res = await this.$API.spu.deleteSpu(id);
+      if (res.code == 200) {
+        this.$message.success("删除成功");
+        this.getSpuList();
+      }
     },
     /* 分页器 */
     // 新增一个方法用于根据当前的 page 和 limit 更新当前页的数据
@@ -139,9 +221,18 @@ export default {
       this.page = val; // 修改当前页
       this.getSpuList(); // 重新获取列表数据
     },
-    /* 自定义事件 spuform */
-    changeScene(scene) {
+    /* 自定义事件 spuForm */
+    changeScene({ scene, flag }) {
+      // flag 是为了区分是保存还是添加
       this.scene = scene;
+      this.loading = true;
+      // 子组件通知父组件切换场景，需要再次获取SPU列表的数据进行展示
+      if (flag == "修改") {
+        this.getSpuList();
+      } else {
+        this.page = 1;
+        this.getSpuList(this.page);
+      }
     },
   },
 };
@@ -156,7 +247,7 @@ export default {
 }
 
 .avatar-uploader .el-upload:hover {
-  border-color: #409EFF;
+  border-color: #409eff;
 }
 
 .avatar-uploader-icon {
