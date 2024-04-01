@@ -1,29 +1,14 @@
 <template>
   <div>
     <el-card style="margin: 20px 0">
-      <CategorySelect
-        @getCategoryId="getCategoryId"
-        :show="scene != 0"
-      ></CategorySelect>
+      <CategorySelect @getCategoryId="getCategoryId" :show="scene != 0"></CategorySelect>
     </el-card>
     <el-card>
       <div v-show="scene == 0">
-        <el-button
-          type="primary"
-          icon="el-icon-plus"
-          :disabled="!category3Id"
-          @click="changeSpu"
-          >添加SPU</el-button
-        >
+        <el-button type="primary" icon="el-icon-plus" :disabled="!category3Id" @click="changeSpu">添加SPU</el-button>
 
-        <el-table
-          :data="list"
-          border
-          style="width: 100%"
-          v-loading="loading"
-          element-loading-text="拼命加载中"
-          element-loading-spinner="el-icon-loading"
-        >
+        <el-table :data="list" border style="width: 100%" v-loading="loading" element-loading-text="拼命加载中"
+          element-loading-spinner="el-icon-loading">
           <el-table-column type="index" label="序号" width="60" align="center">
           </el-table-column>
           <el-table-column prop="spuName" label="SPU名称" width="180">
@@ -32,65 +17,19 @@
           </el-table-column>
           <el-table-column prop="prop" label="操作" width="260" align="center">
             <template slot-scope="{ row, $index }">
-              <el-tooltip
-                class="item"
-                effect="dark"
-                content="添加sku"
-                placement="top"
-              >
-                <el-button
-                  type="success"
-                  icon="el-icon-plus"
-                  size="mini"
-                  @click="addSkuForm(row)"
-                ></el-button>
+              <el-tooltip class="item" effect="dark" content="添加sku" placement="top">
+                <el-button type="success" icon="el-icon-plus" size="mini" @click="addSkuForm(row)"></el-button>
               </el-tooltip>
-              <el-tooltip
-                class="item"
-                effect="dark"
-                content="修改spu"
-                placement="top"
-              >
-                <el-button
-                  type="warning"
-                  icon="el-icon-edit"
-                  size="mini"
-                  @click="changeSpu(row)"
-                ></el-button>
+              <el-tooltip class="item" effect="dark" content="修改spu" placement="top">
+                <el-button type="warning" icon="el-icon-edit" size="mini" @click="changeSpu(row)"></el-button>
               </el-tooltip>
-              <el-tooltip
-                class="item"
-                effect="dark"
-                content="查看当前spu详情"
-                placement="top"
-              >
-                <el-button
-                  type="info"
-                  icon="el-icon-warning"
-                  size="mini"
-                ></el-button>
+              <el-tooltip class="item" effect="dark" content="查看当前spu详情" placement="top">
+                <el-button type="info" icon="el-icon-warning" size="mini"></el-button>
               </el-tooltip>
-              <el-tooltip
-                class="item"
-                effect="dark"
-                content="删除spu"
-                placement="top"
-              >
-                <el-popconfirm
-                  style="margin-left: 10px"
-                  confirmButtonText="确认"
-                  cancelButtonText="取消"
-                  icon="el-icon-info"
-                  iconColor="red"
-                  title="是否删除当前spu？"
-                  @onConfirm="handleDelete(row.id)"
-                >
-                  <el-button
-                    slot="reference"
-                    type="danger"
-                    icon="el-icon-delete"
-                    size="mini"
-                  ></el-button>
+              <el-tooltip class="item" effect="dark" content="删除spu" placement="top">
+                <el-popconfirm style="margin-left: 10px" confirmButtonText="确认" cancelButtonText="取消" icon="el-icon-info"
+                  iconColor="red" title="是否删除当前spu？" @onConfirm="handleDelete(row.id)">
+                  <el-button slot="reference" type="danger" icon="el-icon-delete" size="mini"></el-button>
                 </el-popconfirm>
               </el-tooltip>
             </template>
@@ -98,16 +37,9 @@
         </el-table>
 
         <template>
-          <el-pagination
-            @size-change="handleSizeChange"
-            @current-change="handleCurrentChange"
-            :current-page="page"
-            :page-sizes="[3, 5, 10]"
-            :page-size="limit"
-            layout="prev, pager, next, jumper, -> , sizes, total"
-            :total="total"
-            style="margin-top: 20px; text-align: center"
-          >
+          <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="page"
+            :page-sizes="[3, 5, 10]" :page-size="limit" layout="prev, pager, next, jumper, -> , sizes, total"
+            :total="total" style="margin-top: 20px; text-align: center">
           </el-pagination>
         </template>
       </div>
@@ -186,7 +118,7 @@ export default {
     // 添加SKU
     addSkuForm(row) {
       this.scene = 2;
-      this.$refs.skuForm.getData(row);
+      this.$refs.skuForm.getData(this.category1Id, this.category2Id, row);
     },
     // 删除
     async handleDelete(id) {

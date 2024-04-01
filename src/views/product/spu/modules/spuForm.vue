@@ -1,44 +1,23 @@
 <template>
   <div class="">
-    <el-form
-      ref="form"
-      :model="spu"
-      label-width="80px"
-      v-loading="loading"
-      element-loading-text="拼命加载中"
-      element-loading-spinner="el-icon-loading"
-    >
+    <el-form ref="form" :model="spu" label-width="80px" v-loading="loading" element-loading-text="拼命加载中"
+      element-loading-spinner="el-icon-loading">
       <el-form-item label="SPU名称">
         <el-input v-model="spu.spuName"></el-input>
       </el-form-item>
       <el-form-item label="品牌">
         <el-select v-model="spu.tmId" placeholder="请选择品牌">
-          <el-option
-            :label="tm.tmName"
-            :value="tm.id"
-            v-for="tm in tradeMarkList"
-            :key="tm.id"
-          ></el-option>
+          <el-option :label="tm.tmName" :value="tm.id" v-for="tm in tradeMarkList" :key="tm.id"></el-option>
         </el-select>
       </el-form-item>
       <el-form-item label="SPU描述">
-        <el-input
-          type="textarea"
-          v-model="spu.description"
-          rows="4"
-          placeholder="SPU描述"
-        ></el-input>
+        <el-input type="textarea" v-model="spu.description" rows="4" placeholder="SPU描述"></el-input>
       </el-form-item>
 
       <el-form-item label="SPU图片">
-        <el-upload
-          action="/dev-api/admin/product/fileUpload"
-          list-type="picture-card"
-          :on-preview="handlePictureCardPreview"
-          :on-remove="handleRemove"
-          :on-success="handleSuccess"
-          :file-list="spuImageList"
-        >
+        <el-upload action="/dev-api/admin/product/fileUpload" list-type="picture-card"
+          :on-preview="handlePictureCardPreview" :on-remove="handleRemove" :on-success="handleSuccess"
+          :file-list="spuImageList">
           <i class="el-icon-plus"></i>
         </el-upload>
         <el-dialog :visible.sync="dialogVisible">
@@ -47,25 +26,13 @@
       </el-form-item>
 
       <el-form-item label="销售属性">
-        <el-select
-          v-model="attrIdAndAttrName"
-          :placeholder="`还有${unSelectSaleAttr.length}个未选择`"
-        >
-          <el-option
-            :label="base.name"
-            :value="`${base.id}:${base.name}`"
-            v-for="base in unSelectSaleAttr"
-            :key="base.id"
-          ></el-option>
+        <el-select v-model="attrIdAndAttrName" :placeholder="`还有${unSelectSaleAttr.length}个未选择`">
+          <el-option :label="base.name" :value="`${base.id}:${base.name}`" v-for="base in unSelectSaleAttr"
+            :key="base.id"></el-option>
           <!-- <el-option label="区域二" value="beijing"></el-option> -->
         </el-select>
-        <el-button
-          type="primary"
-          icon="el-icon-plus"
-          :disabled="!attrIdAndAttrName"
-          @click="addSaleAttr"
-          >添加销售属性</el-button
-        >
+        <el-button type="primary" icon="el-icon-plus" :disabled="!attrIdAndAttrName"
+          @click="addSaleAttr">添加销售属性</el-button>
         <!-- 展示的是当前spu属于自己的销售属性 -->
         <el-table :data="spu.spuSaleAttrList" border style="width: 100%">
           <el-table-column type="index" label="序号" width="60">
@@ -76,43 +43,23 @@
 
           <el-table-column prop="spuSaleAttrValueList" label="属性值名称列表">
             <template slot-scope="{ row, $index }">
-              <el-tag
-                :key="tag.id"
-                v-for="(tag, index) in row.spuSaleAttrValueList"
-                closable
-                :disable-transitions="false"
-                @close="row.spuSaleAttrValueList.splice(index, 1)"
-              >
+              <el-tag :key="tag.id" v-for="(tag, index) in row.spuSaleAttrValueList" closable :disable-transitions="false"
+                @close="row.spuSaleAttrValueList.splice(index, 1)">
                 {{ tag.saleAttrValueName }}
               </el-tag>
 
-              <el-input
-                class="input-new-tag"
-                v-if="row.inputVisible"
-                v-model="row.inputValue"
-                ref="saveTagInput"
-                size="small"
-                @blur="handleInputConfirm(row)"
-              >
+              <el-input class="input-new-tag" v-if="row.inputVisible" v-model="row.inputValue" ref="saveTagInput"
+                size="small" @blur="handleInputConfirm(row)">
               </el-input>
-              <el-button
-                v-else
-                class="button-new-tag"
-                size="small"
-                @click="addSaleAttrValue($event, $index, row)"
-                >添加</el-button
-              >
+              <el-button v-else class="button-new-tag" size="small"
+                @click="addSaleAttrValue($event, $index, row)">添加</el-button>
             </template>
           </el-table-column>
 
           <el-table-column prop="address" label="操作" width="180">
             <template slot-scope="{ row, $index }">
-              <el-button
-                type="danger"
-                icon="el-icon-delete"
-                size="mini"
-                @click="spu.spuSaleAttrList.splice($index, 1)"
-              ></el-button>
+              <el-button type="danger" icon="el-icon-delete" size="mini"
+                @click="spu.spuSaleAttrList.splice($index, 1)"></el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -291,6 +238,9 @@ export default {
             (item.response && item.response.data) || item.url),
         };
       });
+      console.log('this.spu.spuImageList', this.spu.spuImageList);
+      console.log('this.spu', this.spu);
+
       let res = await this.$API.spu.addAndUpdateSpu(this.spu);
       if (res.code == 200) {
         this.$message.success("保存成功");
@@ -318,7 +268,7 @@ export default {
 </script>
 
 <style>
-.el-tag + .el-tag {
+.el-tag+.el-tag {
   margin-left: 10px;
 }
 

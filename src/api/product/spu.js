@@ -57,8 +57,6 @@ export const addAndUpdateSpu = (data) => {
   }
 };
 
-// -----------------------
-
 // 删除spu
 export const deleteSpu = (spuId) =>
   request({
