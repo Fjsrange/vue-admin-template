@@ -107,7 +107,7 @@ export default {
       this.skuInfo = { ...this.skuInfo, category3Id, spuId, tmId };
       this.spu = row;
       // 获取图片数据
-      let resImg = await this.$API.sku.spuImgList(row.id);
+      let resImg = await this.$API.spu.spuImgList(row.id);
       if (resImg.code == 200) {
         let list = resImg.data;
         list.forEach(item => {
@@ -119,14 +119,14 @@ export default {
       }
 
       // 获取销售属性数据
-      let resAttr = await this.$API.sku.saleAttrList(row.id);
+      let resAttr = await this.$API.spu.saleAttrList(row.id);
       console.log('resAttr', resAttr);
       if (resAttr.code == 200) {
         this.saleAttrList = resAttr.data;
       }
 
       // 获取平台属性数据
-      let resInfo = await this.$API.sku.attrInfoList(category1Id, category2Id, row.category3Id)
+      let resInfo = await this.$API.spu.attrInfoList(category1Id, category2Id, row.category3Id)
       console.log('resInfo', resInfo);
       if (resInfo.code == 200) {
         this.attrInfoList = resInfo.data
@@ -149,10 +149,68 @@ export default {
     },
     /* 按钮操作 */
     // 保存
-    save() { },
+    async save() {
+      const { attrInfoList, skuInfo, saleAttrList, imageList } = this;
+      // 整理平台属性的数据方式一
+      /* // 新建数组
+      let arr = [];
+      attrInfoList.forEach(item => {
+        // 当前平台属性用户选择的选项
+        if (item.attrIdAndeItemId) {
+          const [attrId, valueId] = item.attrIdAndeItemId.split(':');
+          let obj = {
+            attrId,
+            valueId
+          }
+          arr.push(obj);
+        }
+      })
+      // 将数据整理好后赋值给skuInfo.skuAttrValueList
+      skuInfo.skuAttrValueList = arr; */
+      // 整理平台属性的数据方式二
+      // reduce是用来累加的，prev代表前面的累加值，item是这次的值
+      skuInfo.skuAttrValueList = attrInfoList.reduce((prev, item) => {
+        if (item.attrIdAndeItemId) {
+          const [attrId, valueId] = item.attrIdAndeItemId.split(':');
+          prev.push({ attrId, valueId });
+        }
+        return prev;
+      }, [])
+      // 整理销售属性的数据
+      skuInfo.skuSaleAttrValueList = saleAttrList.reduce((prev, item) => {
+        if (item.saleIdAndeItemId) {
+          const [saleAttrId, saleAttrValueId] = item.saleIdAndeItemId.split(':');
+          prev.push({ saleAttrId, saleAttrValueId });
+        }
+        return prev;
+      }, [])
+      // 整理图片的数据
+      skuInfo.skuImageList = imageList.map(item => {
+        return {
+          imgName: item.imgName,
+          imgUrl: item.imgUrl || item.response.data,
+          isDefault: item.isDefault,
+          spuImgId: item.id
+        }
+      });
+      console.log('this.skuInfo', this.skuInfo);
+      try {
+        let res = await this.$API.spu.saveSkuInfo(this.skuInfo);
+        console.log('res', res);
+        if (res.code == 200) {
+          this.$message.success('保存成功');
+          this.$emit('skuScene', 0);
+          Object.assign(this._data, this.$options.data());
+        }
+      } catch (error) {
+        console.log(error);
+        console.dir(error)
+      }
+
+    },
     // 取消
     cancel() {
-      this.$emit("changeScene", { scene: 0, flag: "" });
+      this.$emit("skuScene", 0);
       Object.assign(this._data, this.$options.data());
     },
   },

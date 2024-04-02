@@ -1,30 +1,29 @@
 import request from "@/utils/request";
 
-// 获取图片列表
-export const spuImgList = (spuId) =>
+// 获取sku列表
+export const skuList = (page, limit) =>
   request({
-    url: `/admin/product/spuImageList/${spuId}`,
+    url: `/admin/product/list/${page}/${limit}`,
     method: "get",
   });
 
-// 获取销售属性
-export const saleAttrList = (spuId) =>
+// 上架
+export const onSale = (skuId) =>
   request({
-    url: `/admin/product/spuSaleAttrList/${spuId}`,
+    url: `/admin/product/onSale/${skuId}`,
     method: "get",
   });
 
-// 获取平台属性接口
-export const attrInfoList = (category1Id, category2Id, category3Id) =>
+// 下架
+export const onCancel = (skuId) =>
   request({
-    url: `/admin/product/attrInfoList/${category1Id}/${category2Id}/${category3Id}`,
+    url: `/admin/product/cancelSale/${skuId}`,
     method: "get",
   });
 
-// 保存
-export const saveSpuInfo = (data) =>
+// sku详情
+export const getSkuById = (skuId) =>
   request({
-    url: "/admin/product/saveSpuInfo",
-    data,
-    method: "post",
+    url: `/admin/product/getSkuById/${skuId}`,
+    method: "get",
   });
