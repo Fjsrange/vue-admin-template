@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-table style="width: 100%;" border prop="prop" :data="list" v-loading="loading" element-loading-text="拼命加载中"
+    <el-table style="width: 100%;" border prop="prop" :data="skuList" v-loading="loading" element-loading-text="拼命加载中"
       element-loading-spinner="el-icon-loading">
       <el-table-column type="index" label="序号" width="60" align="center">
       </el-table-column>
@@ -43,20 +43,43 @@
       style="margin-top: 20px; text-align: center">
     </el-pagination>
 
-    <el-drawer :title="form.skuName" :visible.sync="dialog" direction="rtl" ref="drawer">
-      <div class="demo-drawer__content">
-        <el-form :model="form">
-          <el-form-item label="活动名称" :label-width="formLabelWidth">
-            <el-input v-model="form.name" autocomplete="off"></el-input>
-          </el-form-item>
-          <el-form-item label="活动区域" :label-width="formLabelWidth">
-            <el-select v-model="form.region" placeholder="请选择活动区域">
-              <el-option label="区域一" value="shanghai"></el-option>
-              <el-option label="区域二" value="beijing"></el-option>
-            </el-select>
-          </el-form-item>
-        </el-form>
-      </div>
+    <el-drawer :title="skuInfo.skuName" :visible.sync="dialog" direction="rtl" ref="drawer" size="40%">
+      <el-row>
+        <el-col :span="5">名称</el-col>
+        <el-col :span="16">{{ skuInfo.skuName }}</el-col>
+      </el-row>
+
+      <el-row>
+        <el-col :span="5">描述</el-col>
+        <el-col :span="16">{{ skuInfo.skuDesc }}</el-col>
+      </el-row>
+
+      <el-row>
+        <el-col :span="5">价格</el-col>
+        <el-col :span="16">{{ skuInfo.price }}</el-col>
+      </el-row>
+
+      <el-row>
+        <el-col :span="5">平台属性</el-col>
+        <el-col :span="16">
+          <template>
+            <el-tag type="success" v-for="attr in skuInfo.skuAttrValueList" :key="attr.id" style="margin-right: 10px;">{{
+              attr.id }} - {{ attr.valueId
+  }}</el-tag>
+          </template>
+        </el-col>
+      </el-row>
+
+      <el-row>
+        <el-col :span="5">视频图片</el-col>
+        <el-col :span="16">
+          <el-carousel height="150px">
+            <el-carousel-item v-for="img in skuInfo.skuImageList" :key="img.id">
+              <img :src="img.imgUrl" alt="">
+            </el-carousel-item>
+          </el-carousel>
+        </el-col>
+      </el-row>
     </el-drawer>
   </div>
 </template>
@@ -66,15 +89,14 @@ export default {
   name: "sku",
   data() {
     return {
-      list: [], //存储sku列表数据
+      skuList: [], //存储sku列表数据
       loading: true, //控制是否显示骨架屏
       page: 1, //默认展示第一页数据
       limit: 5, //每次请求的数据个数
-      skuList: [], //存储sku列表的数据
       total: 0, //存储分页器一共展示的数据条数
-      dialog: false, // 抽屉的显示与隐藏
+      dialog: true, // 抽屉的显示与隐藏
       formLabelWidth: '80px',
-      form: {}, // 存储表单的数据
+      skuInfo: {},
     };
   },
   mounted() {
@@ -85,7 +107,7 @@ export default {
       const { page, limit } = this;
       let res = await this.$API.sku.skuList(page, limit);
       if (res.code == 200) {
-        this.list = res.data.records;
+        this.skuList = res.data.records;
         this.total = res.data.total;
         this.loading = false;
       }
@@ -122,7 +144,7 @@ export default {
       console.log('rews', res);
       if (res.code == 200) {
         this.dialog = true;
-        this.form = res.data;
+        this.skuInfo = res.data;
       }
     },
     // 删除
@@ -146,4 +168,39 @@ export default {
 };
 </script>
 
-<style scoped></style>
+
+<style scoped>
+/* row下的col */
+.el-row .el-col-5 {
+  font-size: 18px;
+  text-align: right;
+}
+
+.el-col {
+  margin: 10px;
+}
+
+/* 轮播图 */
+.el-carousel__item h3 {
+  color: #475669;
+  font-size: 14px;
+  opacity: 0.75;
+  line-height: 150px;
+  margin: 0;
+}
+
+.el-carousel__item:nth-child(2n) {
+  background-color: #99a9bf;
+}
+
+.el-carousel__item:nth-child(2n+1) {
+  background-color: #d3dce6;
+}
+
+::v-deep .el-carousel__button {
+  width: 10px;
+  height: 10px;
+  background: red;
+  border-radius: 50%;
+}
+</style>
