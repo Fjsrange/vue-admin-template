@@ -20,7 +20,7 @@ English | [简体中文](./README-zh.md)
 
 
 ## 介绍
-该项模板来自于PanJiaChen,https://github.com/PanJiaChe。
+该项模板来自于PanJiaChen的vue-admin-templat，https://github.com/PanJiaCh
 
 ## Build Setup
 
