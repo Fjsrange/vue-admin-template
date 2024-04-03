@@ -18,6 +18,10 @@ English | [简体中文](./README-zh.md)
    </a>
 </p>
 
+
+## 介绍
+该项模板来自于PanJiaChen,https://github.com/PanJiaChe。
+
 ## Build Setup
 
 ```bash
