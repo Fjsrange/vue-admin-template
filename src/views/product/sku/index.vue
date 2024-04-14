@@ -1,7 +1,14 @@
 <template>
   <div>
-    <el-table style="width: 100%;" border prop="prop" :data="skuList" v-loading="loading" element-loading-text="拼命加载中"
-      element-loading-spinner="el-icon-loading">
+    <el-table
+      style="width: 100%"
+      border
+      prop="prop"
+      :data="skuList"
+      v-loading="loading"
+      element-loading-text="拼命加载中"
+      element-loading-spinner="el-icon-loading"
+    >
       <el-table-column type="index" label="序号" width="60" align="center">
       </el-table-column>
 
@@ -11,9 +18,18 @@
       <el-table-column prop="skuDesc" label="描述" width="width" align="center">
       </el-table-column>
 
-      <el-table-column prop="skuDefaultImg" label="默认图片" width="width" align="center">
+      <el-table-column
+        prop="skuDefaultImg"
+        label="默认图片"
+        width="width"
+        align="center"
+      >
         <template slot-scope="{ row }">
-          <img :src="row.skuDefaultImg" alt="" style="width: 80px; height: 80px;">
+          <img
+            :src="row.skuDefaultImg"
+            alt=""
+            style="width: 80px; height: 80px"
+          />
         </template>
       </el-table-column>
 
@@ -24,26 +40,68 @@
       </el-table-column>
 
       <el-table-column prop="prop" label="操作" width="width" align="center">
-        <template slot-scope="{row, $index}">
-          <el-button type="success" icon="el-icon-top" size="mini" v-if="row.isSale == 0"
-            @click="onSale(row)"></el-button>
-          <el-button type="info" icon="el-icon-bottom" size="mini" v-else @click="onCancel(row)"></el-button>
-          <el-button type="primary" icon="el-icon-edit" size="mini" @click="handleEdit(row)"></el-button>
-          <el-button type="info" icon="el-icon-info" size="mini" @click="getSkuInfo(row)"></el-button>
-          <el-popconfirm :title="`确定删除${row.skuName}吗？`" @onConfirm="handlerRemove(row)">
-            <el-button type="danger" icon="el-icon-delete" size="mini" slot="reference"
-              style="margin-left: 10px;"></el-button>
+        <template slot-scope="{ row, $index }">
+          <el-button
+            type="success"
+            icon="el-icon-top"
+            size="mini"
+            v-if="row.isSale == 0"
+            @click="onSale(row)"
+          ></el-button>
+          <el-button
+            type="info"
+            icon="el-icon-bottom"
+            size="mini"
+            v-else
+            @click="onCancel(row)"
+          ></el-button>
+          <el-button
+            type="primary"
+            icon="el-icon-edit"
+            size="mini"
+            @click="handleEdit(row)"
+          ></el-button>
+          <el-button
+            type="info"
+            icon="el-icon-info"
+            size="mini"
+            @click="getSkuInfo(row)"
+          ></el-button>
+          <el-popconfirm
+            :title="`确定删除${row.skuName}吗？`"
+            @onConfirm="handlerRemove(row)"
+          >
+            <el-button
+              type="danger"
+              icon="el-icon-delete"
+              size="mini"
+              slot="reference"
+              style="margin-left: 10px"
+            ></el-button>
           </el-popconfirm>
         </template>
       </el-table-column>
     </el-table>
     <!-- 分页 -->
-    <el-pagination @size-change="handleSizeChange" @current-change="handleCurrentChange" :current-page="page"
-      :page-sizes="[3, 5, 10]" :page-size="limit" layout="total, sizes, prev, pager, next, jumper" :total="total"
-      style="margin-top: 20px; text-align: center">
+    <el-pagination
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+      :current-page="page"
+      :page-sizes="[3, 5, 10]"
+      :page-size="limit"
+      layout="total, sizes, prev, pager, next, jumper"
+      :total="total"
+      style="margin-top: 20px; text-align: center"
+    >
     </el-pagination>
 
-    <el-drawer :title="skuInfo.skuName" :visible.sync="dialog" direction="rtl" ref="drawer" size="40%">
+    <el-drawer
+      :title="skuInfo.skuName"
+      :visible.sync="dialog"
+      direction="rtl"
+      ref="drawer"
+      size="40%"
+    >
       <el-row>
         <el-col :span="5">名称</el-col>
         <el-col :span="16">{{ skuInfo.skuName }}</el-col>
@@ -63,9 +121,13 @@
         <el-col :span="5">平台属性</el-col>
         <el-col :span="16">
           <template>
-            <el-tag type="success" v-for="attr in skuInfo.skuAttrValueList" :key="attr.id" style="margin-right: 10px;">{{
-              attr.id }} - {{ attr.valueId
-  }}</el-tag>
+            <el-tag
+              type="success"
+              v-for="attr in skuInfo.skuAttrValueList"
+              :key="attr.id"
+              style="margin-right: 10px"
+              >{{ attr.id }} - {{ attr.valueId }}</el-tag
+            >
           </template>
         </el-col>
       </el-row>
@@ -75,7 +137,7 @@
         <el-col :span="16">
           <el-carousel height="150px">
             <el-carousel-item v-for="img in skuInfo.skuImageList" :key="img.id">
-              <img :src="img.imgUrl" alt="">
+              <img :src="img.imgUrl" alt="" />
             </el-carousel-item>
           </el-carousel>
         </el-col>
@@ -94,8 +156,8 @@ export default {
       page: 1, //默认展示第一页数据
       limit: 5, //每次请求的数据个数
       total: 0, //存储分页器一共展示的数据条数
-      dialog: true, // 抽屉的显示与隐藏
-      formLabelWidth: '80px',
+      dialog: false, // 抽屉的显示与隐藏
+      formLabelWidth: "80px",
       skuInfo: {},
     };
   },
@@ -118,7 +180,7 @@ export default {
       this.loading = true; // 显示loading
       let res = await this.$API.sku.onSale(row.id);
       if (res.code == 200) {
-        this.$message({ type: 'success', message: '上架成功' });
+        this.$message({ type: "success", message: "上架成功" });
         row.isSale = 1;
         this.loading = false; // 显示loading
       }
@@ -128,7 +190,7 @@ export default {
       this.loading = true; // 显示loading
       let res = await this.$API.sku.onCancel(row.id);
       if (res.code == 200) {
-        this.$message({ type: 'success', message: '下架成功' });
+        this.$message({ type: "success", message: "下架成功" });
         row.isSale = 0;
         this.loading = false; // 显示loading
       }
@@ -136,12 +198,12 @@ export default {
     // 编辑
     handleEdit(row) {
       // this.$emit('edit',row)
-      this.$message('正在开发中')
+      this.$message("正在开发中");
     },
     // 详情
     async getSkuInfo(row) {
       let res = await this.$API.sku.getSkuById(row.id);
-      console.log('rews', res);
+      console.log("rews", res);
       if (res.code == 200) {
         this.dialog = true;
         this.skuInfo = res.data;
@@ -149,8 +211,7 @@ export default {
     },
     // 删除
     handlerRemove(row) {
-      console.log('删除', row);
-
+      console.log("删除", row);
     },
     /* 分页器 */
     // 每页条数变化时触发
@@ -167,7 +228,6 @@ export default {
   },
 };
 </script>
-
 
 <style scoped>
 /* row下的col */
@@ -193,7 +253,7 @@ export default {
   background-color: #99a9bf;
 }
 
-.el-carousel__item:nth-child(2n+1) {
+.el-carousel__item:nth-child(2n + 1) {
   background-color: #d3dce6;
 }
 
